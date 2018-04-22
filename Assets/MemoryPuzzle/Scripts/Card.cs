@@ -1,111 +1,114 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 
-public class Card : MonoBehaviour
+namespace MemoryPuzzle
 {
-    public GameObject FrontFace;
-    public GameObject BackFace;
-    public Text CardText;
-
-    private Canvas frontCanvas;
-    private Canvas backCanvas;
-
-    private CardOrientation curOrientation = CardOrientation.Front;
-    private int number;
-
-    public enum CardOrientation
+    public class Card : MonoBehaviour
     {
-        Front,
-        Back
-    }
+        public GameObject FrontFace;
+        public GameObject BackFace;
+        public Text CardText;
 
-    void Awake()
-    {
-        frontCanvas = FrontFace.GetComponent<Canvas>();
-        backCanvas = BackFace.GetComponent<Canvas>();
-    }
+        private Canvas frontCanvas;
+        private Canvas backCanvas;
 
-    void Start()
-    {
-        SetOrientation(CardOrientation.Front);
-    }
+        private CardOrientation curOrientation = CardOrientation.Front;
+        private int number;
 
-    private float GetSize()
-    {
-        var rectTransform = FrontFace.GetComponent<RectTransform>();
-        return rectTransform.rect.width * rectTransform.localScale.x;
-    }
-
-    public void Init(int newNumber)
-    {
-        Number = newNumber;
-    }
-
-    public int Number
-    {
-        get { return number; }
-        set
+        public enum CardOrientation
         {
-            number = value;
-            CardText.text = number.ToString();
+            Front,
+            Back
         }
-    }
 
-    public void FlipCard()
-    {
-        switch (curOrientation)
+        void Awake()
         {
-            case CardOrientation.Front:
-                SetOrientation(CardOrientation.Back);
-                break;
-            case CardOrientation.Back:
-                SetOrientation(CardOrientation.Front);
-                break;
+            frontCanvas = FrontFace.GetComponent<Canvas>();
+            backCanvas = BackFace.GetComponent<Canvas>();
         }
-    }
 
-    public void SetOrientation(CardOrientation newOrientation)
-    {
-        switch (newOrientation)
+        void Start()
         {
-            case CardOrientation.Back:
-                transform.rotation = Quaternion.Euler(new Vector3(180, 0, 0));
-                backCanvas.sortingOrder = 1;
-                frontCanvas.sortingOrder = -1;
-                break;
-            case CardOrientation.Front:
-                transform.rotation = Quaternion.Euler(Vector3.zero);
-                frontCanvas.sortingOrder = 1;
-                backCanvas.sortingOrder = -1;
-                break;
+            SetOrientation(CardOrientation.Front);
         }
-        curOrientation = newOrientation;
-    }
 
-    public void OnBackFaceClicked()
-    {
-        FlipCard();
-        GameController.Instance.OnCardFlipped(this);
-    }
+        private float GetSize()
+        {
+            var rectTransform = FrontFace.GetComponent<RectTransform>();
+            return rectTransform.rect.width * rectTransform.localScale.x;
+        }
 
-    public bool IsSame(Card secondCard)
-    {
-        return Number == secondCard.Number;
-    }
+        public void Init(int newNumber)
+        {
+            Number = newNumber;
+        }
 
-    public void FaceFront()
-    {
-        SetOrientation(Card.CardOrientation.Front);
-    }
+        public int Number
+        {
+            get { return number; }
+            set
+            {
+                number = value;
+                CardText.text = number.ToString();
+            }
+        }
 
-    public void FaceBack()
-    {
-        SetOrientation(Card.CardOrientation.Back);
-    }
+        public void FlipCard()
+        {
+            switch (curOrientation)
+            {
+                case CardOrientation.Front:
+                    SetOrientation(CardOrientation.Back);
+                    break;
+                case CardOrientation.Back:
+                    SetOrientation(CardOrientation.Front);
+                    break;
+            }
+        }
 
-    public void SetSize(float newSize)
-    {
-        var scaleMult = newSize / GetSize();
-        transform.localScale = Vector3.one * scaleMult;
+        public void SetOrientation(CardOrientation newOrientation)
+        {
+            switch (newOrientation)
+            {
+                case CardOrientation.Back:
+                    transform.rotation = Quaternion.Euler(new Vector3(180, 0, 0));
+                    backCanvas.sortingOrder = 1;
+                    frontCanvas.sortingOrder = -1;
+                    break;
+                case CardOrientation.Front:
+                    transform.rotation = Quaternion.Euler(Vector3.zero);
+                    frontCanvas.sortingOrder = 1;
+                    backCanvas.sortingOrder = -1;
+                    break;
+            }
+            curOrientation = newOrientation;
+        }
+
+        public void OnBackFaceClicked()
+        {
+            FlipCard();
+            GameController.Instance.OnCardFlipped(this);
+        }
+
+        public bool IsSame(Card secondCard)
+        {
+            return Number == secondCard.Number;
+        }
+
+        public void FaceFront()
+        {
+            SetOrientation(Card.CardOrientation.Front);
+        }
+
+        public void FaceBack()
+        {
+            SetOrientation(Card.CardOrientation.Back);
+        }
+
+        public void SetSize(float newSize)
+        {
+            var scaleMult = newSize / GetSize();
+            transform.localScale = Vector3.one * scaleMult;
+        }
     }
 }
