@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using FifteenPuzzle;
 using UnityEngine;
 
 public class GameController : MonoBehaviour
@@ -9,16 +10,18 @@ public class GameController : MonoBehaviour
     // Use this for initialization
 	void Start ()
 	{
-	    var upperLeftPos = Vector2.zero;
+	    var tileSize = TilePrefab.GetComponent<Tile>().GetSize();
+
+	    Vector3 upperLeftPos = Camera.main.ViewportToWorldPoint(Vector3.up) + (Vector3.down+Vector3.right)*tileSize/2;
+	    upperLeftPos.z = 0;
 	    for (int row = 0; row < 4; row++)
 	    {
 	        for (int col = 0; col < 4; col++)
 	        {
 	            var tile = Instantiate(TilePrefab);
-	            float tileSize = 1;
 	            tile.transform.position = upperLeftPos 
-                    + row*Vector2.right * (tileSize) 
-                    + col*Vector2.down * tileSize;
+                    + row*Vector3.right * (tileSize) 
+                    + col*Vector3.down * tileSize;
 	        }
 	    }
 	}

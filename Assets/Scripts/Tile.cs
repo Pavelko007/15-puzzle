@@ -11,7 +11,7 @@ namespace FifteenPuzzle
 
         private int number;
 
-        private float GetSize()
+        public float GetSize()
         {
             var rectTransform = canvas.GetComponent<RectTransform>();
             return rectTransform.rect.width * rectTransform.localScale.x;
