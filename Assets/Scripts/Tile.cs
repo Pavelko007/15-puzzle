@@ -1,9 +1,10 @@
 ﻿using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace FifteenPuzzle
 {
-    public class Tile : MonoBehaviour
+    public class Tile : MonoBehaviour, IPointerClickHandler
     {
         public Text Text;
 
@@ -36,6 +37,11 @@ namespace FifteenPuzzle
         {
             var scaleMult = newSize / GetSize();
             transform.localScale = Vector3.one * scaleMult;
+        }
+
+        public void OnPointerClick(PointerEventData eventData)
+        {
+            GameController.Instantse.OnTileClicked(this);
         }
     }
 }
