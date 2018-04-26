@@ -1,9 +1,7 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using FifteenPuzzle;
 using UnityEngine;
-using UnityEngine.Assertions;
 
 public class GameController : MonoBehaviour
 {
@@ -12,6 +10,8 @@ public class GameController : MonoBehaviour
 
     private Dictionary<int, Tile> cellToTileDict = new Dictionary<int, Tile>();
     private int gridSize = 4;
+    private float cellSize;
+    private Vector3 upperLeftPos;
 
     void Awake()
     {
@@ -20,12 +20,11 @@ public class GameController : MonoBehaviour
 #endif
     }
 
-
     void Start ()
 	{
-	    var tileSize = TilePrefab.GetComponent<Tile>().GetSize();
+	    cellSize = TilePrefab.GetComponent<Tile>().GetSize();
 
-	    Vector3 upperLeftPos = Camera.main.ViewportToWorldPoint(Vector3.up) + (Vector3.down+Vector3.right)*tileSize/2;
+	    upperLeftPos = Camera.main.ViewportToWorldPoint(Vector3.up) + (Vector3.down+Vector3.right)*cellSize/2;
 	    upperLeftPos.z = 0;
 	    
 	    for (int row = 0; row < gridSize; row++)
@@ -41,47 +40,56 @@ public class GameController : MonoBehaviour
 	            else
 	            {
 	                var tile = Instantiate(TilePrefab);
-	                tile.transform.position = upperLeftPos 
-	                                          + row*Vector3.right * (tileSize) 
-	                                          + col*Vector3.down * tileSize;
+	                tile.transform.position = GetTilePosition(col, row);
 	                cellToTileDict[cellNum] = tile.GetComponent<Tile>();
 	            }
 	        }
 	    }
 	}
 
+    private Vector3 GetTilePosition(int col, int row)
+    {
+        return upperLeftPos
+               + col * Vector3.right * cellSize
+               + row * Vector3.down * cellSize;
+    }
+
     public void OnTileClicked(Tile tile)
     {
         //find the cell number of clicked tile
-        int cellNumber = cellToTileDict.Where(x=>x.Value == tile).Select(x=>x.Key).First();
+        int tileCellNum = cellToTileDict.Where(x=>x.Value == tile).Select(x=>x.Key).First();
 
         //find all adjacent cells
-        List<int> adjucentCells = GetAdjacentCells(cellNumber);
-        foreach (var cell in adjucentCells)
-        {
-            Debug.Log(cell);
-        }
+        List<int> adjucentCells = GetAdjacentCells(tileCellNum );
+     
 
         //if any adjucent cell is empty then move the tile to this cells
         foreach (var cell in adjucentCells)  {
             if (null == cellToTileDict[cell])
             {
-                MoveTileToCell(cell);
+                MoveTileToCell(cell, tileCellNum );
             }
         }
     }
 
-    private void MoveTileToCell(int cell)
+    private void MoveTileToCell(int emptyCellNum, int tileCellNum)
     {
-        throw new System.NotImplementedException();
+        Tile tileToMove = cellToTileDict[tileCellNum];
+
+        //update references
+        cellToTileDict[emptyCellNum] = cellToTileDict[tileCellNum];
+        cellToTileDict[tileCellNum] = null;
+
+        //change tiles postion
+        tileToMove.transform.position = GetTilePosition(GetCol(emptyCellNum), GetRow(emptyCellNum));
     }
 
     private List<int> GetAdjacentCells(int cellNumber)
     {
         var result = new List<int>();
 
-        int row = (cellNumber - 1) / gridSize;
-        int col = (cellNumber - 1) % gridSize; 
+        int row = GetRow(cellNumber);
+        int col = GetCol(cellNumber); 
 
         //upper
         {
@@ -117,6 +125,16 @@ public class GameController : MonoBehaviour
             }
         }
         return result;
+    }
+
+    private int GetCol(int cellNumber)
+    {
+        return (cellNumber - 1) % gridSize;
+    }
+
+    private int GetRow(int cellNumber)
+    {
+        return (cellNumber - 1) / gridSize;
     }
 
     private int GetTileNumber(int col, int row)
