@@ -3,25 +3,31 @@ using System.Collections.Generic;
 using System.Linq;
 using FifteenPuzzle;
 using UnityEngine;
+using UnityEngine.Assertions;
 
 public class GameController : MonoBehaviour
 {
     public GameObject TilePrefab;
     public static GameController Instantse;
 
+    private Dictionary<int, Tile> cellToTileDict = new Dictionary<int, Tile>();
+    private int gridSize = 4;
+
     void Awake()
     {
         Instantse = this;
+#if UNITY_EDITOR
+#endif
     }
 
-    // Use this for initialization
-	void Start ()
+
+    void Start ()
 	{
 	    var tileSize = TilePrefab.GetComponent<Tile>().GetSize();
 
 	    Vector3 upperLeftPos = Camera.main.ViewportToWorldPoint(Vector3.up) + (Vector3.down+Vector3.right)*tileSize/2;
 	    upperLeftPos.z = 0;
-	    gridSize = 4;
+	    
 	    for (int row = 0; row < gridSize; row++)
 	    {
 	        for (int col = 0; col < gridSize; col++)
@@ -44,16 +50,13 @@ public class GameController : MonoBehaviour
 	    }
 	}
 
-    private Dictionary<int, Tile> cellToTileDict = new Dictionary<int, Tile>();
-    private int gridSize;
-
     public void OnTileClicked(Tile tile)
     {
         //find the cell number of clicked tile
         int cellNumber = cellToTileDict.Where(x=>x.Value == tile).Select(x=>x.Key).First();
 
         //find all adjacent cells
-        List<int> adjucentCells = GetAdjucentCells(cellNumber);
+        List<int> adjucentCells = GetAdjacentCells(cellNumber);
         foreach (var cell in adjucentCells)
         {
             Debug.Log(cell);
@@ -73,8 +76,51 @@ public class GameController : MonoBehaviour
         throw new System.NotImplementedException();
     }
 
-    private List<int> GetAdjucentCells(int cellNumber)
+    private List<int> GetAdjacentCells(int cellNumber)
     {
-        throw new System.NotImplementedException();
+        var result = new List<int>();
+
+        int row = (cellNumber - 1) / gridSize;
+        int col = (cellNumber - 1) % gridSize; 
+
+        //upper
+        {
+            var newRow = row - 1;
+            if (newRow >= 0)
+            {
+                result.Add(GetTileNumber(col, newRow));
+            }
+        }
+
+        //lower
+        {
+            var newRow = row + 1;
+            if (newRow < gridSize)
+            {
+                result.Add(GetTileNumber(col, newRow));
+            }
+        }
+        //to the right 
+        {
+            var newCol = col + 1;
+            if (newCol < gridSize)
+            {
+                result.Add(GetTileNumber(newCol, row));
+            }
+        }
+        //to the left
+        {
+            var newCol = col - 1;
+            if (newCol >= 0)
+            {
+                result.Add(GetTileNumber(newCol, row));
+            }
+        }
+        return result;
+    }
+
+    private int GetTileNumber(int col, int row)
+    {
+        return col + gridSize*row + 1;
     }
 }
