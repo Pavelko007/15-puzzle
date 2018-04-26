@@ -12,6 +12,7 @@ public class GameController : MonoBehaviour
     private int gridSize = 4;
     private float cellSize;
     private Vector3 upperLeftPos;
+    private int emptyCellNum;
 
     void Awake()
     {
@@ -27,25 +28,35 @@ public class GameController : MonoBehaviour
 	    upperLeftPos = Camera.main.ViewportToWorldPoint(Vector3.up) + (Vector3.down+Vector3.right)*cellSize/2;
 	    upperLeftPos.z = 0;
 	    
-	    for (int row = 0; row < gridSize; row++)
-	    {
-	        for (int col = 0; col < gridSize; col++)
-	        {
-	            int cellNum = col + row * gridSize + 1;
+	    CreateTiles();
 
-	            if (cellNum == 16)
-	            {
-	                cellToTileDict[16] = null;
-	            }
-	            else
-	            {
-	                var tile = Instantiate(TilePrefab);
-	                tile.transform.position = GetTilePosition(col, row);
-	                cellToTileDict[cellNum] = tile.GetComponent<Tile>();
-	            }
-	        }
-	    }
+
 	}
+
+    private void CreateTiles()
+    {
+        for (int row = 0; row < gridSize; row++)
+        {
+            for (int col = 0; col < gridSize; col++)
+            {
+                int cellNum = col + row * gridSize + 1;
+
+                if (cellNum == 16)
+                {
+                    emptyCellNum = 16;
+                    cellToTileDict[16] = null;
+                }
+                else
+                {
+                    var tileGo = Instantiate(TilePrefab);
+                    tileGo.transform.position = GetTilePosition(col, row);
+                    var tile = tileGo.GetComponent<Tile>();
+                    tile.Number = cellNum;
+                    cellToTileDict[cellNum] = tile;
+                }
+            }
+        }
+    }
 
     private Vector3 GetTilePosition(int col, int row)
     {
@@ -62,26 +73,24 @@ public class GameController : MonoBehaviour
         //find all adjacent cells
         List<int> adjucentCells = GetAdjacentCells(tileCellNum );
      
-
         //if any adjucent cell is empty then move the tile to this cells
-        foreach (var cell in adjucentCells)  {
-            if (null == cellToTileDict[cell])
-            {
-                MoveTileToCell(cell, tileCellNum );
-            }
+        if (adjucentCells.Contains(emptyCellNum))
+        {
+            MoveTileToEmptyCell(tileCellNum);
         }
     }
 
-    private void MoveTileToCell(int emptyCellNum, int tileCellNum)
+    private void MoveTileToEmptyCell(int tileCellNum, bool updatePosition = true)
     {
-        Tile tileToMove = cellToTileDict[tileCellNum];
-
         //update references
-        cellToTileDict[emptyCellNum] = cellToTileDict[tileCellNum];
+        cellToTileDict[this.emptyCellNum] = cellToTileDict[tileCellNum];
         cellToTileDict[tileCellNum] = null;
-
-        //change tiles postion
-        tileToMove.transform.position = GetTilePosition(GetCol(emptyCellNum), GetRow(emptyCellNum));
+        this.emptyCellNum = tileCellNum;
+        if (updatePosition)
+        {
+            cellToTileDict[tileCellNum].transform.position =
+                GetTilePosition(GetCol(this.emptyCellNum), GetRow(this.emptyCellNum));
+        }
     }
 
     private List<int> GetAdjacentCells(int cellNumber)
