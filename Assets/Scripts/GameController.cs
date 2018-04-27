@@ -7,12 +7,14 @@ public class GameController : MonoBehaviour
 {
     public GameObject TilePrefab;
     public static GameController Instantse;
+    public GameObject GameOverPanel;
 
     private Dictionary<int, Tile> cellToTileDict = new Dictionary<int, Tile>();
     private int gridSize = 4;
     private float cellSize;
     private Vector3 upperLeftPos;
     private int emptyCellNum;
+    private bool isPlaying = true;
 
     void Awake()
     {
@@ -29,22 +31,30 @@ public class GameController : MonoBehaviour
 	    upperLeftPos.z = 0;
 	    
 	    CreateTiles();
-	    ShuffleTiles();
-	    foreach (var key in cellToTileDict.Keys)
-	    {
-	        var tile = cellToTileDict[key];
-            if(tile != null) UpdateTilePosition(tile, key);
-	    }
+	    StartNewGame();
 	}
+
+    public void StartNewGame()
+    {
+        isPlaying = true;
+        GameOverPanel.SetActive(false);
+        ShuffleTiles();
+    }
 
     private void ShuffleTiles()
     {
-        int numIterations = 100;
+        int numIterations = 1;
         while (numIterations-- > 0)
         {
             var adjacentCells = GetAdjacentCells(emptyCellNum);
             var cellToMove = adjacentCells[Random.Range(0, adjacentCells.Count)];
             MoveTileToEmptyCell(cellToMove, false);
+        }
+
+        foreach (var key in cellToTileDict.Keys)
+        {
+            var tile = cellToTileDict[key];
+            if (tile != null) UpdateTilePosition(tile, key);
         }
     }
 
@@ -82,6 +92,8 @@ public class GameController : MonoBehaviour
 
     public void OnTileClicked(Tile tile)
     {
+        if (!isPlaying) return;
+
         //find the cell number of clicked tile
         int tileCellNum = cellToTileDict.Where(x=>x.Value == tile).Select(x=>x.Key).First();
 
@@ -92,7 +104,25 @@ public class GameController : MonoBehaviour
         if (adjucentCells.Contains(emptyCellNum))
         {
             MoveTileToEmptyCell(tileCellNum);
+            if (IsBoardValid())
+            {
+                isPlaying = false;
+                GameOverPanel.SetActive(true);
+            }
         }
+    }
+
+    private bool IsBoardValid()
+    {
+        foreach (var key in cellToTileDict.Keys)
+        {
+            var tile = cellToTileDict[key];
+            if (tile != null)
+            {
+                if (tile.Number != key) return false;
+            }
+        }
+        return true;
     }
 
     private void MoveTileToEmptyCell(int tileCellNum, bool updatePosition = true)
