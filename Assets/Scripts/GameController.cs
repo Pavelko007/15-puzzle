@@ -43,7 +43,7 @@ public class GameController : MonoBehaviour
 
     private void ShuffleTiles()
     {
-        int numIterations = 1;
+        int numIterations = 1000;
         while (numIterations-- > 0)
         {
             var adjacentCells = GetAdjacentCells(emptyCellNum);
