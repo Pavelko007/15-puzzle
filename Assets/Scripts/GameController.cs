@@ -29,9 +29,24 @@ public class GameController : MonoBehaviour
 	    upperLeftPos.z = 0;
 	    
 	    CreateTiles();
-
-
+	    ShuffleTiles();
+	    foreach (var key in cellToTileDict.Keys)
+	    {
+	        var tile = cellToTileDict[key];
+            if(tile != null) UpdateTilePosition(tile, key);
+	    }
 	}
+
+    private void ShuffleTiles()
+    {
+        int numIterations = 100;
+        while (numIterations-- > 0)
+        {
+            var adjacentCells = GetAdjacentCells(emptyCellNum);
+            var cellToMove = adjacentCells[Random.Range(0, adjacentCells.Count)];
+            MoveTileToEmptyCell(cellToMove, false);
+        }
+    }
 
     private void CreateTiles()
     {
@@ -82,15 +97,23 @@ public class GameController : MonoBehaviour
 
     private void MoveTileToEmptyCell(int tileCellNum, bool updatePosition = true)
     {
-        //update references
-        cellToTileDict[this.emptyCellNum] = cellToTileDict[tileCellNum];
-        cellToTileDict[tileCellNum] = null;
-        this.emptyCellNum = tileCellNum;
         if (updatePosition)
         {
-            cellToTileDict[tileCellNum].transform.position =
-                GetTilePosition(GetCol(this.emptyCellNum), GetRow(this.emptyCellNum));
+            var tile = cellToTileDict[tileCellNum];
+            UpdateTilePosition(tile, emptyCellNum);
         }
+
+        //update references
+        cellToTileDict[emptyCellNum] = cellToTileDict[tileCellNum];
+        cellToTileDict[tileCellNum] = null;
+
+
+        emptyCellNum = tileCellNum;
+    }
+
+    private void UpdateTilePosition(Tile tile, int cellNumber)
+    {
+        tile.transform.position = GetTilePosition(GetCol(cellNumber), GetRow(cellNumber));
     }
 
     private List<int> GetAdjacentCells(int cellNumber)
